@@ -2,12 +2,17 @@ const express = require("express");
 const app = express();
 const router = express.Router();
 const axios = require("axios");
+require('dotenv').config()
+
+
+const public_api_token_key = process.env.TOKEN
+
 
 /**
  * this will return an array containing all the
  * dates between startDate date and an endDate date
  */
-let getDateArray =  (startDate, endDate) => {
+let getDateArray = (startDate, endDate) => {
   let arr = new Array();
   let dt = new Date(startDate);
   while (dt <= endDate) {
@@ -17,12 +22,22 @@ let getDateArray =  (startDate, endDate) => {
   return arr;
 };
 
+/**
+ * this will prepare a date array
+ */
+let prepareDateArray = (dateArr) => {
+  let arr = new Array();
+  for (let i = 0; i < dateArr.length; i++) {
+    arr.push(new Date(dateArr[i]).toString().substring(0, 15)); //save only the Day MMM DD YYYY part
+  }
+  return arr;
+};
 
 /**
  * this will return an array consisting of the
  * working dates
  */
- let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
+let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
   // remove holidays
   let arr = dates.filter((dt) => {
     return holidaysArray.indexOf(dt) < 0;
@@ -44,45 +59,31 @@ let getDateArray =  (startDate, endDate) => {
 
 
 
-// const weekendDates = (year) => {
-//   let date = new Date(year, 0, 1);
-//   while (date.getDay() != 0) {
-//     date.setDate(date.getDate() + 1);
-//   }
-//   let days = [];
-//   while (date.getFullYear() == year) {
-//     let m = date.getMonth() + 1;
-//     let d = date.getDate();
-//     days.push(
-//       year + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d)
-//     );
-//     date.setDate(date.getDate() + 7);
-//   }
-//   return days;
-// };
-
-router.get("/country_list", async (req, res) => {
-  try {
-    const country_list = await axios.get(
-      "https://date.nager.at/api/v3/AvailableCountries"
-    );
-    console.log(country_list)
-    res.sendDate(country_list.data);
-  } catch (error) {
-    console.log(error.message);
-  }
-});
-
-router.get("/local_holidays", async(req, res) => {
-  try {
-    const country_list = await axios.get(
-      "https://support.google.com/business/answer/6333474?hl=en#region_ad"
-    );
-    res.sendDate(country_list.data);
-  } catch (error) {
-    console.log(error.message);
-  }
-  res.sendDate("Available local holidays based on country");
+router.get("/local_holidays", async (req, res) => {
+  let publicHoliday = []
+  axios
+    .get("https://api.getfestivo.com/v2/holidays", {
+      params: {
+        api_key: `${public_api_token_key}`,
+        country: "NG",
+        year: 2021,
+      },
+    })
+    .then((res) => {
+      let data = res.data.holidays
+      // Object.keys(())
+      for(let key of Object.keys(data)){
+        publicHoliday.push(data[key].data)
+        console.log(data[key].date);
+      }
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
+    .then(function () {
+      // always executed
+    });
 });
 
 // endDatepoint showing list of available times based on his country, from and to
