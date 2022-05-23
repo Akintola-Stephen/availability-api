@@ -38,7 +38,7 @@ let prepareDateArray = (dateArr) => {
 let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
   // remove holidays
   let arr = dates.filter((dt) => {
-    return holidaysArray.indexOf(dt) < 0;
+    return hoildayDates.indexOf(dt) < 0;
   });
 
   // remove weekendDate dates that are not working dates
@@ -55,9 +55,23 @@ let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
   return result;
 };
 
-// startDate and endDate dates
-let startDate = new Date("2017-10-01"); //YYYY-MM-DD
-let endDate = new Date("2017-10-14"); //YYYY-MM-DD
+function getDefaultOffDays2(year) {
+  var date = new Date(year, 0, 1);
+  while (date.getDay() != 0) {
+    date.setDate(date.getDate() + 1);
+  }
+  var days = [];
+  while (date.getFullYear() == year) {
+    var m = date.getMonth() + 1;
+    var d = date.getDate();
+    days.push(
+      year + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d)
+    );
+    date.setDate(date.getDate() + 7);
+  }
+  console.log(days);
+  return days;
+}
 
 /**
  * holidays and working weekendDates
@@ -71,8 +85,6 @@ let endDate = new Date("2017-10-14"); //YYYY-MM-DD
 
 let workingWeekendDates = ["2017-10-07"]; //YYYY-MM-DD
 
-
-
 router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
   let startDateParam = req.params.start;
   let endDateParam = req.params.end;
@@ -82,12 +94,13 @@ router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
   let endDate = new Date(`${endDateParam}`); //YYYY-MM-DD
 
   let dateArray = getDateArray(startDate, endDate);
-
+  workingWeekendDates = getDefaultOffDays2(`2021`);
 
   // prepare the working weekendDates array
   let workingWeekendDatesArray = prepareDateArray(workingWeekendDates);
 
-  let publicHoliday = [];
+  let publicHoliday,
+    dateFormatter = [];
   axios
     .get("https://api.getfestivo.com/v2/holidays", {
       params: {
@@ -103,24 +116,23 @@ router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
         publicHoliday.push(data[key].date);
       }
       let holidaysArray = prepareDateArray(publicHoliday);
+      // holidaysArray.toISOString().split('T')
       let workingDateArray = getWorkingDateArray(
         dateArray,
         holidaysArray,
         workingWeekendDatesArray
       );
-      console.log(holidaysArray)
+      for (let index of holidaysArray) {
+        console.log(index)
+        let dateConverter = new Date(``);
+        dateConverter.toISOString().split("T")[0];
+      }
+      console.log(holidaysArray);
     })
     .catch(function (error) {
       console.log(error);
     })
     .then(function () {});
-});
-
-// endDatepoint showing list of available times based on his country, from and to
-router.get("/filtered_available_meeting_date", (req, res) => {
-  res.sendDate(
-    "Available meeting dates based on endDate user country , set from and to date"
-  );
 });
 
 module.exports = router;
