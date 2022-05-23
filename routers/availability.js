@@ -3,6 +3,21 @@ const app = express();
 const router = express.Router();
 const axios = require("axios");
 
+/**
+ * this will return an array containing all the
+ * dates between start date and an end date
+ */
+var getDateArray =  (start, end) => {
+  var arr = new Array();
+  var dt = new Date(start);
+  while (dt <= end) {
+    arr.push(new Date(dt).toString().substring(0, 15)); //saving only to the format Day MMM DD YYYY part
+    dt.setDate(dt.getDate() + 1);
+  }
+  return arr;
+};
+
+
 const weekEnds = (year) => {
   var date = new Date(year, 0, 1);
   while (date.getDay() != 0) {
