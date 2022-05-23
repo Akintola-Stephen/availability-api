@@ -2,11 +2,9 @@ const express = require("express");
 const app = express();
 const router = express.Router();
 const axios = require("axios");
-require('dotenv').config()
+require("dotenv").config();
 
-
-const public_api_token_key = process.env.TOKEN
-
+const public_api_token = process.env.TOKEN;
 
 /**
  * this will return an array containing all the
@@ -57,33 +55,65 @@ let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
   return result;
 };
 
+// startDate and endDate dates
+let startDate = new Date("2017-10-01"); //YYYY-MM-DD
+let endDate = new Date("2017-10-14"); //YYYY-MM-DD
+
+/**
+ * holidays and working weekendDates
+ *
+ * if not applicable then set it as an empty array
+ * example: if no offical holidays then set
+ * officalHolidays = []
+ * similarly, if no working weekendDates then set
+ * workingWeekendDates = []
+ */
+
+let workingWeekendDates = ["2017-10-07"]; //YYYY-MM-DD
 
 
-router.get("/local_holidays", async (req, res) => {
-  let publicHoliday = []
+
+router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
+  let startDateParam = req.params.start;
+  let endDateParam = req.params.end;
+  let region = req.params.regionCode;
+
+  let startDate = new Date(`${startDateParam}`); //YYYY-MM-DD
+  let endDate = new Date(`${endDateParam}`); //YYYY-MM-DD
+
+  let dateArray = getDateArray(startDate, endDate);
+
+
+  // prepare the working weekendDates array
+  let workingWeekendDatesArray = prepareDateArray(workingWeekendDates);
+
+  let publicHoliday = [];
   axios
     .get("https://api.getfestivo.com/v2/holidays", {
       params: {
-        api_key: `${public_api_token_key}`,
-        country: "NG",
+        api_key: `${public_api_token}`,
+        country: `${region}`,
         year: 2021,
       },
     })
     .then((res) => {
-      let data = res.data.holidays
+      let data = res.data.holidays;
       // Object.keys(())
-      for(let key of Object.keys(data)){
-        publicHoliday.push(data[key].data)
-        console.log(data[key].date);
+      for (let key of Object.keys(data)) {
+        publicHoliday.push(data[key].date);
       }
+      let holidaysArray = prepareDateArray(publicHoliday);
+      let workingDateArray = getWorkingDateArray(
+        dateArray,
+        holidaysArray,
+        workingWeekendDatesArray
+      );
+      console.log(holidaysArray)
     })
     .catch(function (error) {
-      // handle error
       console.log(error);
     })
-    .then(function () {
-      // always executed
-    });
+    .then(function () {});
 });
 
 // endDatepoint showing list of available times based on his country, from and to
