@@ -16,7 +16,7 @@ Schedules meeting time based on end user availability, excluding weekends and pu
 ## API Usage
 
 A third party libraRY API was used which performs functionalities of:
-- [Festivo](https://api.getfestivo.com/v2/holidays) Returns the list of public holidays based on a country region
+- [Festivo](https://api.getfestivo.com/v2/holidays):  Returns the list of public holidays based on a country region
     ## API USAGE
     - API accepts country, year and token key as its parameter (Therefore a token key needs to be generated via the website (https://app.getfestivo.com/) )
 
@@ -30,11 +30,7 @@ A third party libraRY API was used which performs functionalities of:
 4. weekEnds
 *   Returns every weekend dates (Saturday and Sundays Only)
 
-## Account Funding
 
-The amount is captured when a user wants to fund their account
-
-# Validations
 ## Instructions to running the application
 1. git clone from the repo "https://github.com/Akintola-Stephen/availability-api.git".
 2. Change to the directory with the command cd "availability-api"
