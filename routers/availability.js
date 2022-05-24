@@ -3,6 +3,8 @@ const app = express();
 const router = express.Router();
 const axios = require("axios");
 require("dotenv").config();
+const NodeCache = require("node-cache");
+const myCache = new NodeCache();
 
 const public_api_token = process.env.TOKEN;
 
@@ -10,7 +12,7 @@ const public_api_token = process.env.TOKEN;
  * this will return an array containing all the
  * dates between startDate date and an endDate date
  */
-let getDateArray = (startDate, endDate) => {
+const getDateArray = (startDate, endDate) => {
   let arr = new Array();
   let dt = new Date(startDate);
   while (dt <= endDate) {
@@ -23,7 +25,7 @@ let getDateArray = (startDate, endDate) => {
 /**
  * this will prepare a date array
  */
-let prepareDateArray = (dateArr) => {
+const prepareDateArray = (dateArr) => {
   let arr = new Array();
   for (let i = 0; i < dateArr.length; i++) {
     arr.push(new Date(dateArr[i]).toString().substring(0, 15)); //save only the Day MMM DD YYYY part
@@ -55,6 +57,7 @@ let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
   return result;
 };
 
+
 const offDays = (year) => {
   var date = new Date(year, 0, 1);
   while (date.getDay() != 0) {
@@ -70,7 +73,7 @@ const offDays = (year) => {
     date.setDate(date.getDate() + 7);
   }
   return days;
-}
+};
 
 /**
  * holidays and working weekendDates
@@ -78,7 +81,7 @@ const offDays = (year) => {
  * if not applicable then set it as an empty array
  * example: if no offical holidays then set
  * officalHolidays = []
- * similarly, if no working weekendDates then set
+ * similarly, if no working weekendDates then workingWeekendDates will be set to an empty array
  * workingWeekendDates = []
  */
 
@@ -92,6 +95,14 @@ router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
   let endDate = new Date(`${endDateParam}`); //YYYY-MM-DD
 
   let dateArray = getDateArray(startDate, endDate);
+
+  /**
+  * 
+  *  Hard coded the year 2021 to filter free weekend datees, 
+    this was done due to the fact that the free versioned API been used permits only for previous year.
+    On production the API it permits for any year, but a will be a paid version.
+  * 
+  * */
   workingWeekendDates = offDays(`2021`);
 
   // prepare the working weekendDates array
@@ -106,30 +117,29 @@ router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
         year: 2021,
       },
     })
-    .then((res) => {
-      let data = res.data.holidays;
-      // Object.keys(())
+    .then((result) => {
+      let data = result.data.holidays;
       for (let key of Object.keys(data)) {
         publicHoliday.push(data[key].date);
       }
       let holidaysArray = prepareDateArray(publicHoliday);
-      // holidaysArray.toISOString().split('T')
-      let workingDateArray = getWorkingDateArray(
+      let validWorkDaysArr = getWorkingDateArray(
         dateArray,
         holidaysArray,
         workingWeekendDatesArray
       );
-      let dates_arr = workingDateArray.map((element) => {
+      let dates_arr = validWorkDaysArr.map((element) => {
         var d = new Date(element);
-        return `${d.getFullYear()}-${d.getDate()}-${d.getMonth()+1}`;
-      })
-      let datesJSON = JSON.stringify(dates_arr)
-      return datesJSON
+        return `${d.getFullYear()}-${d.getDate()}-${d.getMonth() + 1}`;
+      });
+      let freeDatesJSON = JSON.stringify(dates_arr);
+      myCache.set("cachedResult", freeDatesJSON, 10000);
+      return res.status(200).send(freeDatesJSON);
     })
-    .catch(function (error) {
-      console.log(error);
+    .catch((error) => {
+      return res.status(501).send(error.message);
     })
-    .then(function () {});
+    .then(() => {});
 });
 
 module.exports = router;
