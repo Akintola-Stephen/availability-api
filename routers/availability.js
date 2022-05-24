@@ -58,9 +58,9 @@ let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
 };
 
 
-const offDays = (year) => {
+const weekEnds = (year) => {
   var date = new Date(year, 0, 1);
-  while (date.getDay() != 0) {
+  while ((date.getDay() != 0 ) && (date.getDate() !=11)) {
     date.setDate(date.getDate() + 1);
   }
   var days = [];
@@ -72,8 +72,11 @@ const offDays = (year) => {
     );
     date.setDate(date.getDate() + 7);
   }
+  console.log(days);
   return days;
 };
+
+// weekEnds(2022)
 
 /**
  * holidays and working weekendDates
@@ -103,7 +106,7 @@ router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
     On production the API it permits for any year, but a will be a paid version.
   * 
   * */
-  workingWeekendDates = offDays(`2021`);
+  workingWeekendDates = weekEnds(`2021`);
 
   // prepare the working weekendDates array
   let workingWeekendDatesArray = prepareDateArray(workingWeekendDates);
@@ -128,6 +131,7 @@ router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
         holidaysArray,
         workingWeekendDatesArray
       );
+      //  Formatting the date to the format YY-MM-DD
       let dates_arr = validWorkDaysArr.map((element) => {
         var d = new Date(element);
         return `${d.getFullYear()}-${d.getDate()}-${d.getMonth() + 1}`;
