@@ -55,7 +55,7 @@ let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
   return result;
 };
 
-function getDefaultOffDays2(year) {
+const offDays = (year) => {
   var date = new Date(year, 0, 1);
   while (date.getDay() != 0) {
     date.setDate(date.getDate() + 1);
@@ -69,7 +69,6 @@ function getDefaultOffDays2(year) {
     );
     date.setDate(date.getDate() + 7);
   }
-  console.log(days);
   return days;
 }
 
@@ -83,7 +82,6 @@ function getDefaultOffDays2(year) {
  * workingWeekendDates = []
  */
 
-let workingWeekendDates = ["2017-10-07"]; //YYYY-MM-DD
 
 router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
   let startDateParam = req.params.start;
@@ -94,13 +92,12 @@ router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
   let endDate = new Date(`${endDateParam}`); //YYYY-MM-DD
 
   let dateArray = getDateArray(startDate, endDate);
-  workingWeekendDates = getDefaultOffDays2(`2021`);
+  workingWeekendDates = offDays(`2021`);
 
   // prepare the working weekendDates array
   let workingWeekendDatesArray = prepareDateArray(workingWeekendDates);
 
-  let publicHoliday,
-    dateFormatter = [];
+  let publicHoliday = [];
   axios
     .get("https://api.getfestivo.com/v2/holidays", {
       params: {
@@ -122,12 +119,12 @@ router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
         holidaysArray,
         workingWeekendDatesArray
       );
-      for (let index of holidaysArray) {
-        console.log(index)
-        let dateConverter = new Date(``);
-        dateConverter.toISOString().split("T")[0];
-      }
-      console.log(holidaysArray);
+      let dates_arr = workingDateArray.map((element) => {
+        var d = new Date(element);
+        return `${d.getFullYear()}-${d.getDate()}-${d.getMonth()+1}`;
+      })
+      let datesJSON = JSON.stringify(dates_arr)
+      return datesJSON
     })
     .catch(function (error) {
       console.log(error);
