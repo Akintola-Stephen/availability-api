@@ -38,3 +38,8 @@ A third party libraRY API was used which performs functionalities of:
 4. install dependecies with command "npm i"
 5. Run the application with the command "nodemon app.js" or "node app.js"
 5. Access the application endpoint (http://localhost:3000/local_holiday/${startDate}/${endDate}/${regionCode}), e.g "http://localhost:3000/local_holidays/2021/2021-05-30/NG"
+
+
+
+### Note
+This Free versioned API is limited to the year 2021, but a purchased version could use any year
