@@ -57,26 +57,24 @@ let getWorkingDateArray = (dates, hoildayDates, workingWeekendDates) => {
   return result;
 };
 
-
-const weekEnds = (year) => {
-  var date = new Date(year, 0, 1);
-  while ((date.getDay() != 0 ) && (date.getDate() !=11)) {
-    date.setDate(date.getDate() + 1);
+var weekEnds = (year) => {
+  for(i = 0; i < 3; i++){
+    var date = new Date(year, 0, i);
+    var days = [];
+    while (date.getFullYear() == year) {
+            //  console.log(date)
+      var m = date.getMonth() + 1;
+      var d = date.getDate();
+     days.push(
+        year + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d)
+      );
+      date.setDate(date.getDate() + 7);
+    }
+  }      
+   return days;
   }
-  var days = [];
-  while (date.getFullYear() == year) {
-    var m = date.getMonth() + 1;
-    var d = date.getDate();
-    days.push(
-      year + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d)
-    );
-    date.setDate(date.getDate() + 7);
-  }
-  console.log(days);
-  return days;
-};
 
-// weekEnds(2022)
+weekEnds(2022);
 
 /**
  * holidays and working weekendDates
@@ -87,7 +85,6 @@ const weekEnds = (year) => {
  * similarly, if no working weekendDates then workingWeekendDates will be set to an empty array
  * workingWeekendDates = []
  */
-
 
 router.get("/local_holidays/:start/:end/:regionCode", async (req, res) => {
   let startDateParam = req.params.start;
