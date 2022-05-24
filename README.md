@@ -42,4 +42,6 @@ A third party libraRY API was used which performs functionalities of:
 
 
 ### Note
-This Free versioned API is limited to the year 2021, but a purchased version could use any year
+The API been used to fetch countries holidays permits for the year 2021 for a free versioned (no payment), but alows to choose within any range for a paid version.
+Therefore for test purpose the year **2021** should be used.
+Thank you.
